@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HVAC Analytic System - Gedung Parline</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155', 600: '#475569' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
+    .card { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(71, 85, 105, 0.45); }
+    #drop-zone.dragover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.08); }
+    .status-on { background: linear-gradient(135deg, #059669, #10b981); }
+    .status-off { background: linear-gradient(135deg, #dc2626, #ef4444); }
+    .tab-active { background: #0284c7; color: white; }
+    .tab-inactive { background: #1e293b; color: #94a3b8; }
+    .tab-inactive:hover { background: #334155; color: white; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    select, input { background: #1e293b !important; }
+  </style>
+</head>
+<body class="text-slate-200 font-sans">
+
+  <!-- Header -->
+  <header class="border-b border-slate-700/50 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-sky-500/20 flex items-center justify-center">
+          <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white">HVAC Analytic System</h1>
+          <p class="text-sm text-slate-400">Gedung Parline</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div id="hvac-status" class="hidden px-4 py-1.5 rounded-full text-sm font-semibold text-white"></div>
+        <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-500 rounded-lg text-sm font-medium transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Upload Excel
+          <input type="file" id="file-input" accept=".xlsx,.xls,.csv" class="hidden" />
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- Upload Zone -->
+    <div id="upload-section" class="card rounded-2xl p-8 text-center">
+      <div id="drop-zone" class="border-2 border-dashed border-slate-600 rounded-xl p-12 transition">
+        <div class="mx-auto w-16 h-16 rounded-full bg-sky-500/10 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
+        <h2 class="text-lg font-semibold text-white mb-2">Upload File Monthly Report</h2>
+        <p class="text-slate-400 text-sm mb-1">Drag & drop file Excel di sini, atau klik tombol Upload</p>
+        <p class="text-xs text-slate-500">File diproses sepenuhnya di browser (privasi terjaga)</p>
+      </div>
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+        <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+          <div class="text-sky-400 text-sm font-medium mb-1">Suhu Ruangan</div>
+          <div class="text-white font-semibold">Maksimal ≤ 27°C</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+          <div class="text-emerald-400 text-sm font-medium mb-1">RH Ruangan</div>
+          <div class="text-white font-semibold">Maksimal ≤ 70%</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+          <div class="text-amber-400 text-sm font-medium mb-1">Delta Pressure</div>
+          <div class="text-white font-semibold">Minimal ≥ 5 Pa</div>
+        </div>
+      </div>
+      <p class="mt-4 text-xs text-slate-500">Room Monitoring: data di luar spek dianggap HVAC OFF. Chiller: analisis berdasarkan TEW Supply & Return.</p>
+    </div>
+
+    <!-- Main Content (after upload) -->
+    <div id="main-content" class="hidden space-y-6">
+
+      <!-- Tabs -->
+      <div class="flex gap-2">
+        <button id="tab-room" class="tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition">Room Monitoring</button>
+        <button id="tab-chiller" class="tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition">Analisis Chiller</button>
+      </div>
+
+      <!-- ==================== ROOM MONITORING ==================== -->
+      <div id="panel-room" class="space-y-6">
+
+        <div class="card rounded-xl p-4 flex flex-wrap gap-4 items-end">
+          <div class="flex-1 min-w-[160px]">
+            <label class="block text-xs text-slate-400 mb-1">Zone / Sheet</label>
+            <select id="select-sheet" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"></select>
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs text-slate-400 mb-1">Ruangan</label>
+            <select id="select-room" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"></select>
+          </div>
+          <button id="btn-apply" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 rounded-lg text-sm font-medium transition">Tampilkan Data</button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Total Baris</div>
+            <div id="stat-total" class="text-2xl font-bold text-white">-</div>
+          </div>
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Data Valid (HVAC ON)</div>
+            <div id="stat-valid" class="text-2xl font-bold text-emerald-400">-</div>
+          </div>
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Periode Awal</div>
+            <div id="stat-start" class="text-sm font-medium text-white truncate">-</div>
+          </div>
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Periode Akhir</div>
+            <div id="stat-end" class="text-sm font-medium text-white truncate">-</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="flex items-start justify-between mb-4">
+              <div><div class="text-slate-400 text-sm">Suhu</div><div class="text-xs text-slate-500">Max 27°C</div></div>
+              <div class="w-10 h-10 rounded-lg bg-sky-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+            </div>
+            <div class="flex items-end gap-2"><span id="val-temp" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div>
+            <div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-temp" class="h-full bg-sky-500 rounded-full transition-all duration-500" style="width:0%"></div></div>
+          </div>
+          <div class="card rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="flex items-start justify-between mb-4">
+              <div><div class="text-slate-400 text-sm">Relative Humidity</div><div class="text-xs text-slate-500">Max 70%</div></div>
+              <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              </div>
+            </div>
+            <div class="flex items-end gap-2"><span id="val-rh" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">%</span></div>
+            <div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-rh" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width:0%"></div></div>
+          </div>
+          <div class="card rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="flex items-start justify-between mb-4">
+              <div><div class="text-slate-400 text-sm">Delta Pressure</div><div class="text-xs text-slate-500">Min 5 Pa</div></div>
+              <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+            </div>
+            <div class="flex items-end gap-2"><span id="val-dp" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">Pa</span></div>
+            <div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-dp" class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Suhu (°C)</h3><div class="h-56"><canvas id="chart-temp"></canvas></div></div>
+          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren RH (%)</h3><div class="h-56"><canvas id="chart-rh"></canvas></div></div>
+          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Delta Pressure (Pa)</h3><div class="h-56"><canvas id="chart-dp"></canvas></div></div>
+        </div>
+
+        <div class="card rounded-2xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3">
+            <h3 class="text-sm font-medium text-slate-300">Data Log — <span id="table-title">HVAC ON saja</span></h3>
+            <div class="flex items-center gap-2">
+              <input type="text" id="search-table" placeholder="Cari..." class="border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-40" />
+              <button id="btn-export" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition">Export CSV</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto max-h-96">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-800/80 sticky top-0">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">No</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Waktu</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">Suhu (°C)</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">RH (%)</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">ΔP (Pa)</th>
+                </tr>
+              </thead>
+              <tbody id="table-body" class="divide-y divide-slate-700/50"></tbody>
+            </table>
+          </div>
+          <div class="px-5 py-3 border-t border-slate-700 text-xs text-slate-500">Menampilkan <span id="table-count">0</span> baris data valid</div>
+        </div>
+      </div>
+
+      <!-- ==================== CHILLER ANALYSIS ==================== -->
+      <div id="panel-chiller" class="hidden space-y-6">
+
+        <!-- Info Banner -->
+        <div class="card rounded-xl p-4 border-l-4 border-amber-500">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-slate-300">
+              <strong class="text-white">Catatan:</strong> Analisis berdasarkan <strong>TEW Supply</strong> & <strong>TEW Return</strong> saja.
+              Data konsumsi listrik (kW) dan flow rate tidak tersedia, sehingga COP / kW/TR belum dapat dihitung.
+            </div>
+          </div>
+        </div>
+
+        <!-- Chiller Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Total Data</div>
+            <div id="ch-total" class="text-2xl font-bold text-white">-</div>
+          </div>
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Periode</div>
+            <div id="ch-period" class="text-sm font-medium text-white">-</div>
+          </div>
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Avg Delta T</div>
+            <div id="ch-avg-dt" class="text-2xl font-bold text-amber-400">-</div>
+          </div>
+          <div class="card rounded-xl p-4">
+            <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Avg Supply</div>
+            <div id="ch-avg-supply" class="text-2xl font-bold text-sky-400">-</div>
+          </div>
+        </div>
+
+        <!-- Current Values -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="text-slate-400 text-sm mb-1">TEW Supply (terakhir)</div>
+            <div class="flex items-end gap-2">
+              <span id="ch-val-supply" class="text-4xl font-bold text-white">--</span>
+              <span class="text-slate-400 mb-1">°C</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Min: <span id="ch-min-supply">-</span> · Max: <span id="ch-max-supply">-</span> · Avg: <span id="ch-avg-supply2">-</span></div>
+          </div>
+          <div class="card rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="text-slate-400 text-sm mb-1">TEW Return (terakhir)</div>
+            <div class="flex items-end gap-2">
+              <span id="ch-val-return" class="text-4xl font-bold text-white">--</span>
+              <span class="text-slate-400 mb-1">°C</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Min: <span id="ch-min-return">-</span> · Max: <span id="ch-max-return">-</span> · Avg: <span id="ch-avg-return">-</span></div>
+          </div>
+          <div class="card rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="text-slate-400 text-sm mb-1">Delta T (terakhir)</div>
+            <div class="flex items-end gap-2">
+              <span id="ch-val-dt" class="text-4xl font-bold text-white">--</span>
+              <span class="text-slate-400 mb-1">°C</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Min: <span id="ch-min-dt">-</span> · Max: <span id="ch-max-dt">-</span> · Avg: <span id="ch-avg-dt2">-</span></div>
+          </div>
+        </div>
+
+        <!-- Distribution Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card rounded-2xl p-5">
+            <h3 class="text-sm font-medium text-slate-300 mb-4">Distribusi Delta T</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&lt; 3°C (beban rendah / anomali)</span><span id="ch-dt-low-pct" class="text-slate-300">-</span></div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden"><div id="ch-dt-low-bar" class="h-full bg-rose-500 rounded-full" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">3 – 8°C (normal)</span><span id="ch-dt-mid-pct" class="text-slate-300">-</span></div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden"><div id="ch-dt-mid-bar" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&gt; 8°C (beban tinggi)</span><span id="ch-dt-high-pct" class="text-slate-300">-</span></div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden"><div id="ch-dt-high-bar" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card rounded-2xl p-5">
+            <h3 class="text-sm font-medium text-slate-300 mb-4">Distribusi TEW Supply</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&lt; 6°C</span><span id="ch-s-low-pct" class="text-slate-300">-</span></div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden"><div id="ch-s-low-bar" class="h-full bg-sky-400 rounded-full" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">6 – 10°C (tipikal setpoint)</span><span id="ch-s-mid-pct" class="text-slate-300">-</span></div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden"><div id="ch-s-mid-bar" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&gt; 10°C</span><span id="ch-s-high-pct" class="text-slate-300">-</span></div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden"><div id="ch-s-high-bar" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chiller Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="card rounded-2xl p-5">
+            <h3 class="text-sm font-medium text-slate-300 mb-4">Tren TEW Supply & Return (°C)</h3>
+            <div class="h-64"><canvas id="chart-ch-temp"></canvas></div>
+          </div>
+          <div class="card rounded-2xl p-5">
+            <h3 class="text-sm font-medium text-slate-300 mb-4">Tren Delta T (°C)</h3>
+            <div class="h-64"><canvas id="chart-ch-dt"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Insights -->
+        <div class="card rounded-2xl p-5">
+          <h3 class="text-sm font-medium text-slate-300 mb-3">Ringkasan Analisis</h3>
+          <div id="ch-insights" class="text-sm text-slate-400 space-y-2"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-500">
+    HVAC Analytic System • Gedung Parline • Data diproses di browser
+  </footer>
+
+  <script>
+    // ========== Specs ==========
+    const SPECS = { tempMax: 27, rhMax: 70, dpMin: 5 };
+
+    // ========== State ==========
+    let workbook = null;
+    let sheetMeta = {};
+    let currentData = [];
+    let chillerData = [];
+    let charts = { temp: null, rh: null, dp: null, chTemp: null, chDt: null };
+
+    // ========== Helpers ==========
+    function parseNumber(val) {
+      if (val === null || val === undefined || val === '') return null;
+      if (typeof val === 'number') return isNaN(val) ? null : val;
+      const s = String(val).replace(',', '.').replace(/[^\d.-]/g, '');
+      const n = parseFloat(s);
+      return isNaN(n) ? null : n;
+    }
+
+    function parseDate(val) {
+      if (!val) return null;
+      if (val instanceof Date) return val;
+      if (typeof val === 'number') {
+        const d = XLSX.SSF.parse_date_code(val);
+        if (d) return new Date(d.y, d.m - 1, d.d, d.H || 0, d.M || 0, d.S || 0);
+      }
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDate(d) {
+      if (!d) return '-';
+      return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function isValid(temp, rh, dp) {
+      if (temp === null || rh === null || dp === null) return false;
+      return temp <= SPECS.tempMax && rh <= SPECS.rhMax && dp >= SPECS.dpMin;
+    }
+
+    function avg(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
+    function pct(n, total) { return total ? ((n / total) * 100).toFixed(1) + '%' : '0%'; }
+
+    // ========== Tabs ==========
+    document.getElementById('tab-room').addEventListener('click', () => {
+      document.getElementById('tab-room').className = 'tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition';
+      document.getElementById('tab-chiller').className = 'tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition';
+      document.getElementById('panel-room').classList.remove('hidden');
+      document.getElementById('panel-chiller').classList.add('hidden');
+    });
+    document.getElementById('tab-chiller').addEventListener('click', () => {
+      document.getElementById('tab-chiller').className = 'tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition';
+      document.getElementById('tab-room').className = 'tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition';
+      document.getElementById('panel-chiller').classList.remove('hidden');
+      document.getElementById('panel-room').classList.add('hidden');
+    });
+
+    // ========== Parse Room Sheet ==========
+    function analyzeSheet(sheetName) {
+      const ws = workbook.Sheets[sheetName];
+      if (!ws) return null;
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false, range: 0 });
+      if (rows.length < 7) return null;
+
+      let headerRowIdx = -1;
+      for (let i = 0; i < Math.min(10, rows.length); i++) {
+        const joined = (rows[i] || []).map(c => String(c || '').toUpperCase()).join('|');
+        if (joined.includes('DATE') && joined.includes('TIME')) { headerRowIdx = i; break; }
+      }
+      if (headerRowIdx < 0) return null;
+
+      const roomRow = rows[headerRowIdx] || [];
+      const paramRow = rows[headerRowIdx + 1] || [];
+      let dateCol = -1, timeCol = -1;
+      for (let c = 0; c < roomRow.length; c++) {
+        const v = String(roomRow[c] || '').toUpperCase().trim();
+        if (v === 'DATE') dateCol = c;
+        if (v === 'TIME') timeCol = c;
+      }
+      if (dateCol < 0 && timeCol < 0) return null;
+
+      const rooms = [];
+      let currentRoom = null, currentCols = {};
+      for (let c = 0; c < Math.max(roomRow.length, paramRow.length); c++) {
+        const roomName = roomRow[c] ? String(roomRow[c]).trim() : '';
+        const param = paramRow[c] ? String(paramRow[c]).toUpperCase().trim() : '';
+        if (roomName && roomName !== 'DATE' && roomName !== 'TIME') {
+          if (currentRoom) rooms.push({ name: currentRoom, cols: { ...currentCols } });
+          currentRoom = roomName; currentCols = {};
+        }
+        if (currentRoom && param) {
+          if (param.includes('TEMP') || param.includes('SUHU')) currentCols.temp = c;
+          else if (param.includes('HUM') || param.includes('RH')) currentCols.rh = c;
+          else if (param.includes('PRESS') || param.includes('TEKANAN') || param === 'DP') currentCols.dp = c;
+        }
+      }
+      if (currentRoom) rooms.push({ name: currentRoom, cols: { ...currentCols } });
+
+      const completeRooms = rooms.filter(r => r.cols.temp !== undefined && r.cols.rh !== undefined && r.cols.dp !== undefined);
+      return {
+        sheetName,
+        dateCol: dateCol >= 0 ? dateCol : timeCol,
+        dataStartRow: headerRowIdx + 3,
+        rooms: completeRooms.length ? completeRooms : rooms
+      };
+    }
+
+    // ========== Parse Chiller Data ==========
+    function parseChillerData() {
+      const ws = workbook.Sheets['AHU-CH'];
+      if (!ws) return [];
+
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+      // Find columns: from earlier analysis, TEW SUPPLY = col 63, TEW RETURN = col 64, DATE = col 1
+      // But better to detect dynamically
+      let supplyCol = -1, returnCol = -1, dateCol = -1;
+
+      for (let i = 0; i < Math.min(10, rows.length); i++) {
+        const row = rows[i] || [];
+        for (let c = 0; c < row.length; c++) {
+          const v = String(row[c] || '').toUpperCase().trim();
+          if (v === 'DATE') dateCol = c;
+          if (v.includes('TEW SUPPLY') || v === 'TEW SUPPLY') supplyCol = c;
+          if (v.includes('TEW RETURN') || v === 'TEW RETURN') returnCol = c;
+        }
+      }
+
+      // Fallback to known positions if detection fails
+      if (supplyCol < 0) supplyCol = 63;
+      if (returnCol < 0) returnCol = 64;
+      if (dateCol < 0) dateCol = 1;
+
+      const result = [];
+      for (let i = 7; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row) continue;
+        const dateVal = row[dateCol];
+        const supply = parseNumber(row[supplyCol]);
+        const ret = parseNumber(row[returnCol]);
+        if (supply === null || ret === null) continue;
+        if (supply < 0 || supply > 45 || ret < 0 || ret > 50) continue;
+
+        const time = parseDate(dateVal);
+        result.push({ time, supply, return: ret, dt: ret - supply });
+      }
+      result.sort((a, b) => (a.time || 0) - (b.time || 0));
+      return result;
+    }
+
+    // ========== Load File ==========
+    function handleFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+
+          // Room sheets
+          sheetMeta = {};
+          const selectSheet = document.getElementById('select-sheet');
+          selectSheet.innerHTML = '';
+          for (const name of workbook.SheetNames) {
+            if (name === 'AHU-CH') continue;
+            const meta = analyzeSheet(name);
+            if (meta && meta.rooms.length > 0) {
+              sheetMeta[name] = meta;
+              const opt = document.createElement('option');
+              opt.value = name;
+              opt.textContent = name;
+              selectSheet.appendChild(opt);
+            }
+          }
+
+          // Chiller
+          chillerData = parseChillerData();
+          renderChiller();
+
+          document.getElementById('upload-section').classList.add('hidden');
+          document.getElementById('main-content').classList.remove('hidden');
+
+          if (Object.keys(sheetMeta).length > 0) {
+            selectSheet.dispatchEvent(new Event('change'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Gagal membaca file: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ========== Room: Populate & Process ==========
+    document.getElementById('select-sheet').addEventListener('change', () => {
+      const meta = sheetMeta[document.getElementById('select-sheet').value];
+      const selectRoom = document.getElementById('select-room');
+      selectRoom.innerHTML = '';
+      if (!meta) return;
+      meta.rooms.forEach((r, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const hasAll = r.cols.temp !== undefined && r.cols.rh !== undefined && r.cols.dp !== undefined;
+        opt.textContent = r.name + (hasAll ? '' : ' (tidak lengkap)');
+        selectRoom.appendChild(opt);
+      });
+    });
+
+    document.getElementById('btn-apply').addEventListener('click', () => {
+      const sheetName = document.getElementById('select-sheet').value;
+      const roomIdx = parseInt(document.getElementById('select-room').value, 10);
+      const meta = sheetMeta[sheetName];
+      if (!meta || isNaN(roomIdx)) return;
+      const room = meta.rooms[roomIdx];
+      if (!room) return;
+
+      const ws = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+      const result = [];
+      let total = 0;
+
+      for (let i = meta.dataStartRow; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) continue;
+        const dateVal = row[meta.dateCol];
+        if (dateVal === null || dateVal === undefined || dateVal === '') continue;
+        total++;
+        const time = parseDate(dateVal);
+        const temp = room.cols.temp !== undefined ? parseNumber(row[room.cols.temp]) : null;
+        const rh   = room.cols.rh   !== undefined ? parseNumber(row[room.cols.rh])   : null;
+        const dp   = room.cols.dp   !== undefined ? parseNumber(row[room.cols.dp])   : null;
+        if (isValid(temp, rh, dp)) result.push({ time, temp, rh, dp });
+      }
+      result.sort((a, b) => (a.time || 0) - (b.time || 0));
+      currentData = result;
+      renderRoom(total, room.name, sheetName);
+    });
+
+    function renderRoom(totalRows, roomName, sheetName) {
+      document.getElementById('stat-total').textContent = totalRows.toLocaleString('id-ID');
+      document.getElementById('stat-valid').textContent = currentData.length.toLocaleString('id-ID');
+      document.getElementById('table-title').textContent = `${sheetName} › ${roomName} (HVAC ON)`;
+      const statusEl = document.getElementById('hvac-status');
+      statusEl.classList.remove('hidden');
+
+      if (currentData.length > 0) {
+        const first = currentData[0], last = currentData[currentData.length - 1];
+        document.getElementById('stat-start').textContent = formatDate(first.time);
+        document.getElementById('stat-end').textContent = formatDate(last.time);
+        document.getElementById('val-temp').textContent = last.temp.toFixed(1);
+        document.getElementById('val-rh').textContent = last.rh.toFixed(1);
+        document.getElementById('val-dp').textContent = last.dp.toFixed(1);
+        document.getElementById('bar-temp').style.width = Math.min(100, (last.temp / SPECS.tempMax) * 100) + '%';
+        document.getElementById('bar-rh').style.width = Math.min(100, (last.rh / SPECS.rhMax) * 100) + '%';
+        document.getElementById('bar-dp').style.width = Math.min(100, (last.dp / 50) * 100) + '%';
+        statusEl.textContent = 'HVAC ON';
+        statusEl.className = 'px-4 py-1.5 rounded-full text-sm font-semibold text-white status-on';
+      } else {
+        ['stat-start','stat-end'].forEach(id => document.getElementById(id).textContent = '-');
+        ['val-temp','val-rh','val-dp'].forEach(id => document.getElementById(id).textContent = '--');
+        ['bar-temp','bar-rh','bar-dp'].forEach(id => document.getElementById(id).style.width = '0%');
+        statusEl.textContent = 'Tidak ada data valid';
+        statusEl.className = 'px-4 py-1.5 rounded-full text-sm font-semibold text-white status-off';
+      }
+      renderRoomCharts();
+      renderRoomTable(currentData);
+    }
+
+    function renderRoomCharts() {
+      let data = currentData;
+      if (data.length > 400) { const step = Math.ceil(data.length / 400); data = data.filter((_, i) => i % step === 0); }
+      const labels = data.map(d => d.time ? d.time.toLocaleString('id-ID', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '');
+      const common = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', titleColor: '#e2e8f0', bodyColor: '#cbd5e1', borderColor: '#475569', borderWidth: 1 } },
+        scales: { x: { ticks: { color: '#94a3b8', maxTicksLimit: 7, font: { size: 10 } }, grid: { color: 'rgba(71,85,105,0.3)' } }, y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(71,85,105,0.3)' } } },
+        elements: { point: { radius: 0, hoverRadius: 4 }, line: { tension: 0.3, borderWidth: 2 } }
+      };
+      ['temp','rh','dp'].forEach(k => { if (charts[k]) { charts[k].destroy(); charts[k] = null; } });
+      charts.temp = new Chart(document.getElementById('chart-temp'), { type: 'line', data: { labels, datasets: [{ data: data.map(d => d.temp), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.1)', fill: true }] }, options: { ...common, scales: { ...common.scales, y: { ...common.scales.y, suggestedMax: SPECS.tempMax + 2 } } } });
+      charts.rh = new Chart(document.getElementById('chart-rh'), { type: 'line', data: { labels, datasets: [{ data: data.map(d => d.rh), borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.1)', fill: true }] }, options: { ...common, scales: { ...common.scales, y: { ...common.scales.y, suggestedMax: SPECS.rhMax + 5 } } } });
+      charts.dp = new Chart(document.getElementById('chart-dp'), { type: 'line', data: { labels, datasets: [{ data: data.map(d => d.dp), borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true }] }, options: common });
+    }
+
+    function renderRoomTable(data) {
+      const search = (document.getElementById('search-table').value || '').toLowerCase();
+      let filtered = search ? data.filter(d => formatDate(d.time).toLowerCase().includes(search) || String(d.temp).includes(search) || String(d.rh).includes(search) || String(d.dp).includes(search)) : data;
+      const rows = [...filtered].reverse().slice(0, 400);
+      document.getElementById('table-body').innerHTML = rows.map((d, i) => `
+        <tr class="hover:bg-slate-800/50">
+          <td class="px-4 py-2.5 text-slate-500">${i+1}</td>
+          <td class="px-4 py-2.5 text-slate-300">${formatDate(d.time)}</td>
+          <td class="px-4 py-2.5 text-right font-mono text-sky-300">${d.temp.toFixed(1)}</td>
+          <td class="px-4 py-2.5 text-right font-mono text-emerald-300">${d.rh.toFixed(1)}</td>
+          <td class="px-4 py-2.5 text-right font-mono text-amber-300">${d.dp.toFixed(1)}</td>
+        </tr>`).join('');
+      document.getElementById('table-count').textContent = filtered.length.toLocaleString('id-ID');
+    }
+
+    // ========== Chiller Render ==========
+    function renderChiller() {
+      const data = chillerData;
+      if (!data.length) {
+        document.getElementById('ch-insights').innerHTML = '<p class="text-rose-400">Tidak ada data Chiller yang valid di sheet AHU-CH.</p>';
+        return;
+      }
+
+      const supplies = data.map(d => d.supply);
+      const returns = data.map(d => d.return);
+      const dts = data.map(d => d.dt);
+      const last = data[data.length - 1];
+      const first = data[0];
+
+      document.getElementById('ch-total').textContent = data.length.toLocaleString('id-ID');
+      document.getElementById('ch-period').textContent = formatDate(first.time).split(',')[0] + ' – ' + formatDate(last.time).split(',')[0];
+      document.getElementById('ch-avg-dt').textContent = avg(dts).toFixed(1) + '°C';
+      document.getElementById('ch-avg-supply').textContent = avg(supplies).toFixed(1) + '°C';
+
+      document.getElementById('ch-val-supply').textContent = last.supply.toFixed(1);
+      document.getElementById('ch-val-return').textContent = last.return.toFixed(1);
+      document.getElementById('ch-val-dt').textContent = last.dt.toFixed(1);
+
+      document.getElementById('ch-min-supply').textContent = Math.min(...supplies).toFixed(1);
+      document.getElementById('ch-max-supply').textContent = Math.max(...supplies).toFixed(1);
+      document.getElementById('ch-avg-supply2').textContent = avg(supplies).toFixed(1);
+      document.getElementById('ch-min-return').textContent = Math.min(...returns).toFixed(1);
+      document.getElementById('ch-max-return').textContent = Math.max(...returns).toFixed(1);
+      document.getElementById('ch-avg-return').textContent = avg(returns).toFixed(1);
+      document.getElementById('ch-min-dt').textContent = Math.min(...dts).toFixed(1);
+      document.getElementById('ch-max-dt').textContent = Math.max(...dts).toFixed(1);
+      document.getElementById('ch-avg-dt2').textContent = avg(dts).toFixed(1);
+
+      // Distributions
+      const n = data.length;
+      const dtLow = dts.filter(d => d < 3).length;
+      const dtMid = dts.filter(d => d >= 3 && d <= 8).length;
+      const dtHigh = dts.filter(d => d > 8).length;
+      document.getElementById('ch-dt-low-pct').textContent = pct(dtLow, n);
+      document.getElementById('ch-dt-mid-pct').textContent = pct(dtMid, n);
+      document.getElementById('ch-dt-high-pct').textContent = pct(dtHigh, n);
+      document.getElementById('ch-dt-low-bar').style.width = (dtLow / n * 100) + '%';
+      document.getElementById('ch-dt-mid-bar').style.width = (dtMid / n * 100) + '%';
+      document.getElementById('ch-dt-high-bar').style.width = (dtHigh / n * 100) + '%';
+
+      const sLow = supplies.filter(s => s < 6).length;
+      const sMid = supplies.filter(s => s >= 6 && s <= 10).length;
+      const sHigh = supplies.filter(s => s > 10).length;
+      document.getElementById('ch-s-low-pct').textContent = pct(sLow, n);
+      document.getElementById('ch-s-mid-pct').textContent = pct(sMid, n);
+      document.getElementById('ch-s-high-pct').textContent = pct(sHigh, n);
+      document.getElementById('ch-s-low-bar').style.width = (sLow / n * 100) + '%';
+      document.getElementById('ch-s-mid-bar').style.width = (sMid / n * 100) + '%';
+      document.getElementById('ch-s-high-bar').style.width = (sHigh / n * 100) + '%';
+
+      // Insights
+      const insights = [];
+      const avgSupply = avg(supplies);
+      const avgDt = avg(dts);
+      if (avgSupply > 10) insights.push(`• Suhu Supply rata-rata <strong class="text-amber-400">${avgSupply.toFixed(1)}°C</strong> — di atas setpoint tipikal (6–8°C). Periksa setpoint chiller atau kondisi operasi.`);
+      if (avgDt > 8) insights.push(`• Delta T rata-rata <strong class="text-amber-400">${avgDt.toFixed(1)}°C</strong> tergolong tinggi. Bisa menandakan beban pendinginan tinggi atau flow rate rendah.`);
+      if (dtHigh / n > 0.7) insights.push(`• <strong class="text-amber-400">${pct(dtHigh, n)}</strong> data memiliki Delta T &gt; 8°C — sistem cenderung beroperasi pada beban tinggi.`);
+      if (dtLow / n > 0.05) insights.push(`• Terdapat <strong class="text-rose-400">${pct(dtLow, n)}</strong> data dengan Delta T &lt; 3°C (termasuk nilai negatif) — kemungkinan periode chiller OFF atau anomali sensor.`);
+      if (sHigh / n > 0.9) insights.push(`• Hampir seluruh data Supply berada di atas 10°C. Konfirmasi apakah ini sesuai desain sistem (process cooling / high setpoint).`);
+      insights.push(`• Untuk menghitung <strong>COP</strong> dan <strong>kW/TR</strong>, diperlukan data konsumsi listrik chiller (kW) dan/atau flow rate chilled water.`);
+      document.getElementById('ch-insights').innerHTML = insights.map(i => `<p>${i}</p>`).join('');
+
+      // Charts
+      let chartData = data;
+      if (chartData.length > 400) {
+        const step = Math.ceil(chartData.length / 400);
+        chartData = chartData.filter((_, i) => i % step === 0);
+      }
+      const labels = chartData.map(d => d.time ? d.time.toLocaleString('id-ID', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '');
+
+      const common = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, tooltip: { backgroundColor: '#1e293b', titleColor: '#e2e8f0', bodyColor: '#cbd5e1', borderColor: '#475569', borderWidth: 1 } },
+        scales: { x: { ticks: { color: '#94a3b8', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: 'rgba(71,85,105,0.3)' } }, y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(71,85,105,0.3)' } } },
+        elements: { point: { radius: 0, hoverRadius: 4 }, line: { tension: 0.3, borderWidth: 2 } }
+      };
+
+      if (charts.chTemp) { charts.chTemp.destroy(); charts.chTemp = null; }
+      if (charts.chDt) { charts.chDt.destroy(); charts.chDt = null; }
+
+      charts.chTemp = new Chart(document.getElementById('chart-ch-temp'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Supply', data: chartData.map(d => d.supply), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.08)', fill: false },
+            { label: 'Return', data: chartData.map(d => d.return), borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.08)', fill: false }
+          ]
+        },
+        options: common
+      });
+
+      charts.chDt = new Chart(document.getElementById('chart-ch-dt'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{ label: 'Delta T', data: chartData.map(d => d.dt), borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true }]
+        },
+        options: common
+      });
+    }
+
+    // ========== Events ==========
+    document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+    const dropZone = document.getElementById('drop-zone');
+    ['dragenter','dragover'].forEach(evt => dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); }));
+    ['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); }));
+    dropZone.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
+    document.getElementById('search-table').addEventListener('input', () => renderRoomTable(currentData));
+    document.getElementById('btn-export').addEventListener('click', () => {
+      if (!currentData.length) return;
+      const rows = currentData.map(d => ({ Waktu: formatDate(d.time), 'Suhu (°C)': d.temp, 'RH (%)': d.rh, 'Delta Pressure (Pa)': d.dp }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'HVAC_ON');
+      XLSX.writeFile(wb, 'data_hvac_on_parline.csv');
+    });
+  </script>
+</body>
+</html>
