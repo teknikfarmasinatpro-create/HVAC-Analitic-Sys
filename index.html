@@ -31,6 +31,48 @@
 </head>
 <body class="text-slate-200 font-sans">
 
+  <!-- ==================== LOGIN PAGE ==================== -->
+  <div id="login-page" class="min-h-screen flex items-center justify-center px-4">
+    <div class="card rounded-2xl p-8 w-full max-w-md shadow-2xl">
+      <div class="text-center mb-8">
+        <div class="mx-auto w-14 h-14 rounded-xl bg-sky-500/20 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-white">HVAC Analytic System</h1>
+        <p class="text-sm text-slate-400 mt-1">Gedung Parline</p>
+      </div>
+
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5">Username</label>
+          <input type="text" id="login-user" autocomplete="username"
+            class="w-full border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+            placeholder="Masukkan username" required />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5">Password</label>
+          <input type="password" id="login-pass" autocomplete="current-password"
+            class="w-full border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+            placeholder="Masukkan password" required />
+        </div>
+        <p id="login-error" class="hidden text-sm text-rose-400 text-center"></p>
+        <button type="submit"
+          class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 rounded-lg text-sm font-semibold text-white transition">
+          Masuk
+        </button>
+      </form>
+
+      <div class="mt-6 pt-5 border-t border-slate-700 text-xs text-slate-500 text-center space-y-1">
+        <p>admin / admin &nbsp;·&nbsp; visitor / visitor</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APP (hidden until login) ==================== -->
+  <div id="app" class="hidden">
+
   <header class="border-b border-slate-700/50 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
@@ -46,7 +88,9 @@
       </div>
       <div class="flex items-center gap-3">
         <div id="load-status" class="text-xs text-slate-400"></div>
+        <div id="user-badge" class="text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-300"></div>
         <div id="hvac-status" class="hidden px-4 py-1.5 rounded-full text-sm font-semibold text-white"></div>
+        <button id="btn-logout" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition">Keluar</button>
       </div>
     </div>
   </header>
@@ -61,8 +105,7 @@
 
     <div id="error-section" class="hidden card rounded-2xl p-8 text-center">
       <p class="text-rose-400 mb-2">Gagal memuat data otomatis.</p>
-      <p class="text-sm text-slate-400 mb-4">Pastikan file JSON sudah ada di folder <code class="text-sky-400">data/</code> dan GitHub Pages sudah aktif.</p>
-      <p class="text-xs text-slate-500">File yang dibutuhkan: data_ahu-ch.json, data_ahu-1.json, data_ahu-3.json, dst.</p>
+      <p class="text-sm text-slate-400 mb-4">Pastikan file JSON sudah ada di folder <code class="text-sky-400">data/</code>.</p>
     </div>
 
     <div id="main-content" class="hidden space-y-6">
@@ -167,9 +210,54 @@
     </div>
   </main>
 
-  <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-500">HVAC Analytic System • Gedung Parline • Auto-load dari folder data/</footer>
+  <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-500">HVAC Analytic System • Gedung Parline</footer>
+  </div><!-- /app -->
 
   <script>
+    // ========== AUTH ==========
+    const USERS = {
+      admin: 'admin',
+      visitor: 'visitor'
+    };
+
+    function checkAuth() {
+      const user = sessionStorage.getItem('hvac_user');
+      if (user && USERS[user] !== undefined) {
+        showApp(user);
+      } else {
+        document.getElementById('login-page').classList.remove('hidden');
+        document.getElementById('app').classList.add('hidden');
+      }
+    }
+
+    function showApp(user) {
+      document.getElementById('login-page').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('user-badge').textContent = user;
+      loadAllData();
+    }
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const u = document.getElementById('login-user').value.trim().toLowerCase();
+      const p = document.getElementById('login-pass').value;
+      const err = document.getElementById('login-error');
+      if (USERS[u] && USERS[u] === p) {
+        sessionStorage.setItem('hvac_user', u);
+        err.classList.add('hidden');
+        showApp(u);
+      } else {
+        err.textContent = 'Username atau password salah.';
+        err.classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      sessionStorage.removeItem('hvac_user');
+      location.reload();
+    });
+
+    // ========== DASHBOARD LOGIC ==========
     const SPECS = { tempMax: 27, rhMax: 70, dpMin: 5 };
     const DATA_FILES = ['data_ahu-1.json','data_ahu-3.json','data_ahu-3a.json','data_ahu-4.json','data_ahu-5a.json','data_ahu-5b.json','data_ahu-7.json','data_ahu-8.json','data_ahu-9.json'];
     let sheetData = {}, chillerData = [], currentData = [];
@@ -318,7 +406,9 @@
       document.getElementById('panel-chiller').classList.remove('hidden'); document.getElementById('panel-room').classList.add('hidden');
     });
     document.getElementById('search-table').addEventListener('input',()=>renderRoomTable(currentData));
-    loadAllData();
+
+    // Start with login check
+    checkAuth();
   </script>
 </body>
 </html>
