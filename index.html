@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8" />a
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HVAC Analytic System</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -88,6 +88,7 @@
         <select id="select-building" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
           <option value="parline">Gedung Parline</option>
           <option value="tablet">Gedung Tablet</option>
+          <option value="effervescent">Gedung Effervescent</option>
         </select>
       </div>
       <div class="flex-1 min-w-[140px]">
@@ -118,6 +119,13 @@
         <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">RH <span class="text-xs text-slate-500">(Max 70%)</span></div><div class="flex items-end gap-2"><span id="val-rh" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">%</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-rh" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div></div>
         <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">Delta Pressure <span class="text-xs text-slate-500">(Min 5 Pa)</span></div><div class="flex items-end gap-2"><span id="val-dp" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">Pa</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-dp" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div></div>
       </div>
+      <div class="card rounded-2xl p-5 border-l-4 border-sky-500">
+        <h3 class="text-sm font-medium text-slate-300 mb-3">Analisa Singkat</h3>
+        <div id="room-insights" class="text-sm text-slate-400 space-y-1.5">
+          <p class="text-slate-500">Pilih Zone & Ruangan, lalu klik Tampilkan Data.</p>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Suhu (°C)</h3><div class="h-56"><canvas id="chart-temp"></canvas></div></div>
         <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren RH (%)</h3><div class="h-56"><canvas id="chart-rh"></canvas></div></div>
@@ -189,7 +197,8 @@ const USERS={admin:'admin',visitor:'visitor'};
 const SPECS={tempMax:27,rhMax:70,dpMin:5};
 const BUILDINGS={
   parline:{label:'Gedung Parline', files:['data_ahu-1.json','data_ahu-3.json','data_ahu-3a.json','data_ahu-4.json','data_ahu-5a.json','data_ahu-5b.json','data_ahu-7.json','data_ahu-8.json','data_ahu-9.json']},
-  tablet:{label:'Gedung Tablet', files:['data_ahu-1.json','data_ahu-2.json','data_ahu-3.json','data_ahu-4.json','data_ahu-8.json','data_corridor.json']}
+  tablet:{label:'Gedung Tablet', files:['data_ahu-1.json','data_ahu-2.json','data_ahu-3.json','data_ahu-4.json','data_ahu-8.json','data_corridor.json']},
+  effervescent:{label:'Gedung Effervescent', files:['data_room-zone-5.json','data_room-zone-6.json','data_room-zone-7.json']}
 };
 let currentBuilding='parline', sheetData={}, chillerData=[], currentData=[];
 let charts={temp:null,rh:null,dp:null,chTemp:null,chDt:null};
@@ -303,7 +312,47 @@ function renderRoom(total,rn,sn){
     ['bar-temp','bar-rh','bar-dp'].forEach(id=>document.getElementById(id).style.width='0%');
     st.textContent='Tidak ada data valid'; st.className='px-4 py-1.5 rounded-full text-sm font-semibold text-white status-off';
   }
+  renderRoomInsights(total, rn, sn);
   renderRoomCharts(); renderRoomTable(currentData);
+}
+
+function renderRoomInsights(total, rn, sn){
+  const el = document.getElementById('room-insights');
+  if(!currentData.length){
+    const offPct = total ? ((total)/total*100).toFixed(1) : '0';
+    el.innerHTML = '<p class="text-rose-400">Tidak ada data yang memenuhi spek HVAC ON (Suhu ≤27°C, RH ≤70%, ΔP ≥5 Pa).</p>'
+      + '<p>• Total baris: <strong class="text-white">'+total.toLocaleString('id-ID')+'</strong> — semuanya di luar spek / HVAC OFF.</p>'
+      + '<p>• Periksa setpoint, sensor, atau status unit HVAC pada ruangan <strong class="text-white">'+rn+'</strong>.</p>';
+    return;
+  }
+  const temps = currentData.map(d=>d.temp);
+  const rhs = currentData.map(d=>d.rh);
+  const dps = currentData.map(d=>d.dp);
+  const aT = avg(temps), aR = avg(rhs), aD = avg(dps);
+  const onPct = total ? ((currentData.length/total)*100).toFixed(1) : '0';
+  const offN = total - currentData.length;
+  const lines = [];
+  lines.push('• Periode valid: <strong class="text-white">'+formatDate(currentData[0].time)+'</strong> s/d <strong class="text-white">'+formatDate(currentData[currentData.length-1].time)+'</strong>');
+  lines.push('• HVAC ON: <strong class="text-emerald-400">'+currentData.length.toLocaleString('id-ID')+'</strong> dari '+total.toLocaleString('id-ID')+' baris (<strong class="text-emerald-400">'+onPct+'%</strong>)');
+  if(offN > 0) lines.push('• HVAC OFF (di luar spek): <strong class="text-rose-400">'+offN.toLocaleString('id-ID')+'</strong> baris');
+  lines.push('• Rata-rata — Suhu: <strong class="text-sky-300">'+aT.toFixed(1)+'°C</strong> · RH: <strong class="text-emerald-300">'+aR.toFixed(1)+'%</strong> · ΔP: <strong class="text-amber-300">'+aD.toFixed(1)+' Pa</strong>');
+
+  // Spec commentary
+  if(aT > 25) lines.push('• Suhu rata-rata mendekati/batas atas spek (max 27°C) — pantau beban pendinginan.');
+  else if(aT <= 22) lines.push('• Suhu rata-rata stabil di kisaran nyaman (≤22°C).');
+  else lines.push('• Suhu rata-rata masih dalam spek (≤27°C).');
+
+  if(aR > 65) lines.push('• RH rata-rata tinggi (mendekati max 70%) — perhatikan dehumidifikasi.');
+  else if(aR < 40) lines.push('• RH rata-rata rendah (&lt;40%) — cek risiko terlalu kering.');
+  else lines.push('• RH rata-rata dalam rentang aman.');
+
+  if(aD < 8) lines.push('• Delta Pressure rata-rata relatif rendah (mendekati min 5 Pa) — pastikan cascade pressure stabil.');
+  else lines.push('• Delta Pressure rata-rata memadai (≥5 Pa).');
+
+  // Min max
+  lines.push('• Rentang — Suhu '+Math.min(...temps).toFixed(1)+'–'+Math.max(...temps).toFixed(1)+'°C · RH '+Math.min(...rhs).toFixed(1)+'–'+Math.max(...rhs).toFixed(1)+'% · ΔP '+Math.min(...dps).toFixed(1)+'–'+Math.max(...dps).toFixed(1)+' Pa');
+
+  el.innerHTML = lines.map(l=>'<p>'+l+'</p>').join('');
 }
 
 function renderRoomCharts(){
