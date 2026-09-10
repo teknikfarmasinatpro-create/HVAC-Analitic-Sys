@@ -3,412 +3,382 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HVAC Analytic System - Gedung Parline</title>
+  <title>HVAC Analytic System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155', 600: '#475569' } }
-        }
-      }
-    }
-  </script>
+  <script>tailwind.config={theme:{extend:{colors:{dark:{900:'#0f172a',800:'#1e293b',700:'#334155',600:'#475569'}}}}}</script>
   <style>
-    body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
-    .card { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(71, 85, 105, 0.45); }
-    .status-on { background: linear-gradient(135deg, #059669, #10b981); }
-    .status-off { background: linear-gradient(135deg, #dc2626, #ef4444); }
-    .tab-active { background: #0284c7; color: white; }
-    .tab-inactive { background: #1e293b; color: #94a3b8; }
-    .tab-inactive:hover { background: #334155; color: white; }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #1e293b; }
-    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-    select, input { background: #1e293b !important; }
+    body{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);min-height:100vh}
+    .card{background:rgba(30,41,59,.85);backdrop-filter:blur(12px);border:1px solid rgba(71,85,105,.45)}
+    .status-on{background:linear-gradient(135deg,#059669,#10b981)}
+    .status-off{background:linear-gradient(135deg,#dc2626,#ef4444)}
+    .tab-active{background:#0284c7;color:#fff}
+    .tab-inactive{background:#1e293b;color:#94a3b8}
+    .tab-inactive:hover{background:#334155;color:#fff}
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-track{background:#1e293b}
+    ::-webkit-scrollbar-thumb{background:#475569;border-radius:4px}
+    select,input{background:#1e293b!important}
   </style>
 </head>
 <body class="text-slate-200 font-sans">
 
-  <!-- ==================== LOGIN PAGE ==================== -->
-  <div id="login-page" class="min-h-screen flex items-center justify-center px-4">
-    <div class="card rounded-2xl p-8 w-full max-w-md shadow-2xl">
-      <div class="text-center mb-8">
-        <div class="mx-auto w-14 h-14 rounded-xl bg-sky-500/20 flex items-center justify-center mb-4">
-          <svg class="w-8 h-8 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
-        </div>
-        <h1 class="text-2xl font-bold text-white">HVAC Analytic System</h1>
-        <p class="text-sm text-slate-400 mt-1">Gedung Parline</p>
+<div id="login-page" class="min-h-screen flex items-center justify-center px-4">
+  <div class="card rounded-2xl p-8 w-full max-w-md shadow-2xl">
+    <div class="text-center mb-8">
+      <div class="mx-auto w-14 h-14 rounded-xl bg-sky-500/20 flex items-center justify-center mb-4">
+        <svg class="w-8 h-8 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
       </div>
-
-      <form id="login-form" class="space-y-5">
-        <div>
-          <label class="block text-xs text-slate-400 mb-1.5">Username</label>
-          <input type="text" id="login-user" autocomplete="username"
-            class="w-full border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
-            placeholder="Masukkan username" required />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1.5">Password</label>
-          <input type="password" id="login-pass" autocomplete="current-password"
-            class="w-full border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
-            placeholder="Masukkan password" required />
-        </div>
-        <p id="login-error" class="hidden text-sm text-rose-400 text-center"></p>
-        <button type="submit"
-          class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 rounded-lg text-sm font-semibold text-white transition">
-          Masuk
-        </button>
-      </form>
-
-      <div class="mt-6 pt-5 border-t border-slate-700 text-xs text-slate-500 text-center space-y-1">
-        <p>admin / admin &nbsp;·&nbsp; visitor / visitor</p>
+      <h1 class="text-2xl font-bold text-white">HVAC Analytic System</h1>
+      <p class="text-sm text-slate-400 mt-1">Multi-Gedung Monitoring</p>
+    </div>
+    <form id="login-form" class="space-y-5">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1.5">Username</label>
+        <input type="text" id="login-user" autocomplete="username" class="w-full border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500" placeholder="Masukkan username" required />
       </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1.5">Password</label>
+        <input type="password" id="login-pass" autocomplete="current-password" class="w-full border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500" placeholder="Masukkan password" required />
+      </div>
+      <p id="login-error" class="hidden text-sm text-rose-400 text-center"></p>
+      <button type="submit" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 rounded-lg text-sm font-semibold text-white transition">Masuk</button>
+    </form>
+    <div class="mt-6 pt-5 border-t border-slate-700 text-xs text-slate-500 text-center"><p>admin / admin · visitor / visitor</p></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+<header class="border-b border-slate-700/50 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-sky-500/20 flex items-center justify-center">
+        <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-white">HVAC Analytic System</h1>
+        <p class="text-sm text-slate-400" id="header-building">Multi-Gedung</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="load-status" class="text-xs text-slate-400"></div>
+      <div id="user-badge" class="text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-300"></div>
+      <div id="hvac-status" class="hidden px-4 py-1.5 rounded-full text-sm font-semibold text-white"></div>
+      <button id="btn-logout" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition">Keluar</button>
     </div>
   </div>
+</header>
 
-  <!-- ==================== APP (hidden until login) ==================== -->
-  <div id="app" class="hidden">
+<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <div id="loading-section" class="card rounded-2xl p-12 text-center">
+    <div class="mx-auto w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-slate-300">Memuat data...</p>
+    <p id="loading-detail" class="text-xs text-slate-500 mt-2"></p>
+  </div>
+  <div id="error-section" class="hidden card rounded-2xl p-8 text-center">
+    <p class="text-rose-400 mb-2">Gagal memuat data.</p>
+    <p class="text-sm text-slate-400">Pastikan folder <code class="text-sky-400">data/parline/</code> dan <code class="text-sky-400">data/tablet/</code> berisi file JSON.</p>
+  </div>
 
-  <header class="border-b border-slate-700/50 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-sky-500/20 flex items-center justify-center">
-          <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-xl font-bold text-white">HVAC Analytic System</h1>
-          <p class="text-sm text-slate-400">Gedung Parline</p>
-        </div>
+  <div id="main-content" class="hidden space-y-6">
+    <!-- Building selector -->
+    <div class="card rounded-xl p-4 flex flex-wrap gap-4 items-end">
+      <div class="min-w-[180px]">
+        <label class="block text-xs text-slate-400 mb-1">Gedung</label>
+        <select id="select-building" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+          <option value="parline">Gedung Parline</option>
+          <option value="tablet">Gedung Tablet</option>
+        </select>
       </div>
-      <div class="flex items-center gap-3">
-        <div id="load-status" class="text-xs text-slate-400"></div>
-        <div id="user-badge" class="text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-300"></div>
-        <div id="hvac-status" class="hidden px-4 py-1.5 rounded-full text-sm font-semibold text-white"></div>
-        <button id="btn-logout" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition">Keluar</button>
+      <div class="flex-1 min-w-[140px]">
+        <label class="block text-xs text-slate-400 mb-1">Zone / Sheet</label>
+        <select id="select-sheet" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"></select>
       </div>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-
-    <div id="loading-section" class="card rounded-2xl p-12 text-center">
-      <div class="mx-auto w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p class="text-slate-300">Memuat data dari folder <code class="text-sky-400">data/</code> ...</p>
-      <p id="loading-detail" class="text-xs text-slate-500 mt-2"></p>
-    </div>
-
-    <div id="error-section" class="hidden card rounded-2xl p-8 text-center">
-      <p class="text-rose-400 mb-2">Gagal memuat data otomatis.</p>
-      <p class="text-sm text-slate-400 mb-4">Pastikan file JSON sudah ada di folder <code class="text-sky-400">data/</code>.</p>
+      <div class="flex-1 min-w-[180px]">
+        <label class="block text-xs text-slate-400 mb-1">Ruangan</label>
+        <select id="select-room" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"></select>
+      </div>
+      <button id="btn-apply" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 rounded-lg text-sm font-medium transition">Tampilkan Data</button>
     </div>
 
-    <div id="main-content" class="hidden space-y-6">
+    <div class="flex gap-2">
+      <button id="tab-room" class="tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition">Room Monitoring</button>
+      <button id="tab-chiller" class="tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition">Analisis Chiller</button>
+    </div>
 
-      <div class="flex gap-2">
-        <button id="tab-room" class="tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition">Room Monitoring</button>
-        <button id="tab-chiller" class="tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition">Analisis Chiller</button>
+    <div id="panel-room" class="space-y-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Total Baris</div><div id="stat-total" class="text-2xl font-bold text-white">-</div></div>
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Data Valid (HVAC ON)</div><div id="stat-valid" class="text-2xl font-bold text-emerald-400">-</div></div>
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Periode Awal</div><div id="stat-start" class="text-sm font-medium text-white truncate">-</div></div>
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Periode Akhir</div><div id="stat-end" class="text-sm font-medium text-white truncate">-</div></div>
       </div>
-
-      <div id="panel-room" class="space-y-6">
-        <div class="card rounded-xl p-4 flex flex-wrap gap-4 items-end">
-          <div class="flex-1 min-w-[160px]">
-            <label class="block text-xs text-slate-400 mb-1">Zone / Sheet</label>
-            <select id="select-sheet" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"></select>
-          </div>
-          <div class="flex-1 min-w-[200px]">
-            <label class="block text-xs text-slate-400 mb-1">Ruangan</label>
-            <select id="select-room" class="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"></select>
-          </div>
-          <button id="btn-apply" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 rounded-lg text-sm font-medium transition">Tampilkan Data</button>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Total Baris</div><div id="stat-total" class="text-2xl font-bold text-white">-</div></div>
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Data Valid (HVAC ON)</div><div id="stat-valid" class="text-2xl font-bold text-emerald-400">-</div></div>
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Periode Awal</div><div id="stat-start" class="text-sm font-medium text-white truncate">-</div></div>
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Periode Akhir</div><div id="stat-end" class="text-sm font-medium text-white truncate">-</div></div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">Suhu <span class="text-xs text-slate-500">(Max 27°C)</span></div><div class="flex items-end gap-2"><span id="val-temp" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-temp" class="h-full bg-sky-500 rounded-full transition-all" style="width:0%"></div></div></div>
-          <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">RH <span class="text-xs text-slate-500">(Max 70%)</span></div><div class="flex items-end gap-2"><span id="val-rh" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">%</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-rh" class="h-full bg-emerald-500 rounded-full transition-all" style="width:0%"></div></div></div>
-          <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">Delta Pressure <span class="text-xs text-slate-500">(Min 5 Pa)</span></div><div class="flex items-end gap-2"><span id="val-dp" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">Pa</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-dp" class="h-full bg-amber-500 rounded-full transition-all" style="width:0%"></div></div></div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Suhu (°C)</h3><div class="h-56"><canvas id="chart-temp"></canvas></div></div>
-          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren RH (%)</h3><div class="h-56"><canvas id="chart-rh"></canvas></div></div>
-          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Delta Pressure (Pa)</h3><div class="h-56"><canvas id="chart-dp"></canvas></div></div>
-        </div>
-
-        <div class="card rounded-2xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3">
-            <h3 class="text-sm font-medium text-slate-300">Data Log — <span id="table-title">HVAC ON</span></h3>
-            <input type="text" id="search-table" placeholder="Cari..." class="border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-500 w-40" />
-          </div>
-          <div class="overflow-x-auto max-h-96">
-            <table class="w-full text-sm">
-              <thead class="bg-slate-800/80 sticky top-0">
-                <tr>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">No</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Waktu</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">Suhu (°C)</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">RH (%)</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">ΔP (Pa)</th>
-                </tr>
-              </thead>
-              <tbody id="table-body" class="divide-y divide-slate-700/50"></tbody>
-            </table>
-          </div>
-          <div class="px-5 py-3 border-t border-slate-700 text-xs text-slate-500">Menampilkan <span id="table-count">0</span> baris</div>
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">Suhu <span class="text-xs text-slate-500">(Max 27°C)</span></div><div class="flex items-end gap-2"><span id="val-temp" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-temp" class="h-full bg-sky-500 rounded-full" style="width:0%"></div></div></div>
+        <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">RH <span class="text-xs text-slate-500">(Max 70%)</span></div><div class="flex items-end gap-2"><span id="val-rh" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">%</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-rh" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div></div>
+        <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">Delta Pressure <span class="text-xs text-slate-500">(Min 5 Pa)</span></div><div class="flex items-end gap-2"><span id="val-dp" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">Pa</span></div><div class="mt-3 h-2 bg-slate-700 rounded-full overflow-hidden"><div id="bar-dp" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div></div>
       </div>
-
-      <div id="panel-chiller" class="hidden space-y-6">
-        <div class="card rounded-xl p-4 border-l-4 border-amber-500">
-          <div class="text-sm text-slate-300"><strong class="text-white">Catatan:</strong> Analisis berdasarkan TEW Supply & Return. COP belum dapat dihitung tanpa data kW.</div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Suhu (°C)</h3><div class="h-56"><canvas id="chart-temp"></canvas></div></div>
+        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren RH (%)</h3><div class="h-56"><canvas id="chart-rh"></canvas></div></div>
+        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Delta Pressure (Pa)</h3><div class="h-56"><canvas id="chart-dp"></canvas></div></div>
+      </div>
+      <div class="card rounded-2xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3">
+          <h3 class="text-sm font-medium text-slate-300">Data Log — <span id="table-title">HVAC ON</span></h3>
+          <input type="text" id="search-table" placeholder="Cari..." class="border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-500 w-40" />
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Total Data</div><div id="ch-total" class="text-2xl font-bold text-white">-</div></div>
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Periode</div><div id="ch-period" class="text-sm font-medium text-white">-</div></div>
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Avg Delta T</div><div id="ch-avg-dt" class="text-2xl font-bold text-amber-400">-</div></div>
-          <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Avg Supply</div><div id="ch-avg-supply" class="text-2xl font-bold text-sky-400">-</div></div>
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-800/80 sticky top-0"><tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">No</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Waktu</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">Suhu (°C)</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">RH (%)</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">ΔP (Pa)</th>
+            </tr></thead>
+            <tbody id="table-body" class="divide-y divide-slate-700/50"></tbody>
+          </table>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">TEW Supply (terakhir)</div><div class="flex items-end gap-2"><span id="ch-val-supply" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-2 text-xs text-slate-500">Min: <span id="ch-min-supply">-</span> · Max: <span id="ch-max-supply">-</span> · Avg: <span id="ch-avg-supply2">-</span></div></div>
-          <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">TEW Return (terakhir)</div><div class="flex items-end gap-2"><span id="ch-val-return" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-2 text-xs text-slate-500">Min: <span id="ch-min-return">-</span> · Max: <span id="ch-max-return">-</span> · Avg: <span id="ch-avg-return">-</span></div></div>
-          <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">Delta T (terakhir)</div><div class="flex items-end gap-2"><span id="ch-val-dt" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-2 text-xs text-slate-500">Min: <span id="ch-min-dt">-</span> · Max: <span id="ch-max-dt">-</span> · Avg: <span id="ch-avg-dt2">-</span></div></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Distribusi Delta T</h3>
-            <div class="space-y-3">
-              <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&lt; 3°C</span><span id="ch-dt-low-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-dt-low-bar" class="h-full bg-rose-500 rounded-full" style="width:0%"></div></div></div>
-              <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">3–8°C</span><span id="ch-dt-mid-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-dt-mid-bar" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div></div>
-              <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&gt; 8°C</span><span id="ch-dt-high-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-dt-high-bar" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div></div>
-            </div>
-          </div>
-          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Distribusi TEW Supply</h3>
-            <div class="space-y-3">
-              <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&lt; 6°C</span><span id="ch-s-low-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-s-low-bar" class="h-full bg-sky-400 rounded-full" style="width:0%"></div></div></div>
-              <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">6–10°C</span><span id="ch-s-mid-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-s-mid-bar" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div></div>
-              <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&gt; 10°C</span><span id="ch-s-high-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-s-high-bar" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div></div>
-            </div>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Supply & Return</h3><div class="h-64"><canvas id="chart-ch-temp"></canvas></div></div>
-          <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Delta T</h3><div class="h-64"><canvas id="chart-ch-dt"></canvas></div></div>
-        </div>
-        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-3">Ringkasan</h3><div id="ch-insights" class="text-sm text-slate-400 space-y-2"></div></div>
+        <div class="px-5 py-3 border-t border-slate-700 text-xs text-slate-500">Menampilkan <span id="table-count">0</span> baris</div>
       </div>
     </div>
-  </main>
 
-  <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-500">HVAC Analytic System • Gedung Parline</footer>
-  </div><!-- /app -->
+    <div id="panel-chiller" class="hidden space-y-6">
+      <div class="card rounded-xl p-4 border-l-4 border-amber-500"><div class="text-sm text-slate-300"><strong class="text-white">Catatan:</strong> Analisis TEW Supply & Return. COP butuh data kW.</div></div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Total Data</div><div id="ch-total" class="text-2xl font-bold text-white">-</div></div>
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Periode</div><div id="ch-period" class="text-sm font-medium text-white">-</div></div>
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Avg Delta T</div><div id="ch-avg-dt" class="text-2xl font-bold text-amber-400">-</div></div>
+        <div class="card rounded-xl p-4"><div class="text-slate-400 text-xs uppercase mb-1">Avg Supply</div><div id="ch-avg-supply" class="text-2xl font-bold text-sky-400">-</div></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">TEW Supply</div><div class="flex items-end gap-2"><span id="ch-val-supply" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-2 text-xs text-slate-500">Min <span id="ch-min-supply">-</span> · Max <span id="ch-max-supply">-</span> · Avg <span id="ch-avg-supply2">-</span></div></div>
+        <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">TEW Return</div><div class="flex items-end gap-2"><span id="ch-val-return" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-2 text-xs text-slate-500">Min <span id="ch-min-return">-</span> · Max <span id="ch-max-return">-</span> · Avg <span id="ch-avg-return">-</span></div></div>
+        <div class="card rounded-2xl p-6"><div class="text-slate-400 text-sm mb-1">Delta T</div><div class="flex items-end gap-2"><span id="ch-val-dt" class="text-4xl font-bold text-white">--</span><span class="text-slate-400 mb-1">°C</span></div><div class="mt-2 text-xs text-slate-500">Min <span id="ch-min-dt">-</span> · Max <span id="ch-max-dt">-</span> · Avg <span id="ch-avg-dt2">-</span></div></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Distribusi Delta T</h3>
+          <div class="space-y-3">
+            <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&lt; 3°C</span><span id="ch-dt-low-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-dt-low-bar" class="h-full bg-rose-500 rounded-full" style="width:0%"></div></div></div>
+            <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">3–8°C</span><span id="ch-dt-mid-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-dt-mid-bar" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div></div>
+            <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&gt; 8°C</span><span id="ch-dt-high-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-dt-high-bar" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div></div>
+          </div>
+        </div>
+        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Distribusi TEW Supply</h3>
+          <div class="space-y-3">
+            <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&lt; 6°C</span><span id="ch-s-low-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-s-low-bar" class="h-full bg-sky-400 rounded-full" style="width:0%"></div></div></div>
+            <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">6–10°C</span><span id="ch-s-mid-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-s-mid-bar" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div></div>
+            <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">&gt; 10°C</span><span id="ch-s-high-pct">-</span></div><div class="h-2 bg-slate-700 rounded-full"><div id="ch-s-high-bar" class="h-full bg-amber-500 rounded-full" style="width:0%"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Supply & Return</h3><div class="h-64"><canvas id="chart-ch-temp"></canvas></div></div>
+        <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-4">Tren Delta T</h3><div class="h-64"><canvas id="chart-ch-dt"></canvas></div></div>
+      </div>
+      <div class="card rounded-2xl p-5"><h3 class="text-sm font-medium text-slate-300 mb-3">Ringkasan</h3><div id="ch-insights" class="text-sm text-slate-400 space-y-2"></div></div>
+    </div>
+  </div>
+</main>
+<footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-500">HVAC Analytic System • Multi-Gedung</footer>
+</div>
 
-  <script>
-    // ========== AUTH ==========
-    const USERS = {
-      admin: 'admin',
-      visitor: 'visitor'
-    };
+<script>
+const USERS={admin:'admin',visitor:'visitor'};
+const SPECS={tempMax:27,rhMax:70,dpMin:5};
+const BUILDINGS={
+  parline:{label:'Gedung Parline', files:['data_ahu-1.json','data_ahu-3.json','data_ahu-3a.json','data_ahu-4.json','data_ahu-5a.json','data_ahu-5b.json','data_ahu-7.json','data_ahu-8.json','data_ahu-9.json']},
+  tablet:{label:'Gedung Tablet', files:['data_ahu-1.json','data_ahu-2.json','data_ahu-3.json','data_ahu-4.json','data_ahu-8.json','data_corridor.json']}
+};
+let currentBuilding='parline', sheetData={}, chillerData=[], currentData=[];
+let charts={temp:null,rh:null,dp:null,chTemp:null,chDt:null};
 
-    function checkAuth() {
-      const user = sessionStorage.getItem('hvac_user');
-      if (user && USERS[user] !== undefined) {
-        showApp(user);
-      } else {
-        document.getElementById('login-page').classList.remove('hidden');
-        document.getElementById('app').classList.add('hidden');
-      }
-    }
+function parseDate(v){if(!v)return null;const d=new Date(v);return isNaN(d.getTime())?null:d}
+function formatDate(d){if(!d)return'-';return d.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
+function pct(n,t){return t?((n/t)*100).toFixed(1)+'%':'0%'}
+function isValid(t,r,d){if(t==null||r==null||d==null)return false;return t<=SPECS.tempMax&&r<=SPECS.rhMax&&d>=SPECS.dpMin}
 
-    function showApp(user) {
-      document.getElementById('login-page').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      document.getElementById('user-badge').textContent = user;
-      loadAllData();
-    }
+function checkAuth(){
+  const u=sessionStorage.getItem('hvac_user');
+  if(u&&USERS[u]!==undefined) showApp(u);
+  else{document.getElementById('login-page').classList.remove('hidden');document.getElementById('app').classList.add('hidden')}
+}
+function showApp(u){
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-badge').textContent=u;
+  loadBuilding(currentBuilding);
+}
+document.getElementById('login-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const u=document.getElementById('login-user').value.trim().toLowerCase();
+  const p=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-error');
+  if(USERS[u]&&USERS[u]===p){sessionStorage.setItem('hvac_user',u);err.classList.add('hidden');showApp(u)}
+  else{err.textContent='Username atau password salah.';err.classList.remove('hidden')}
+});
+document.getElementById('btn-logout').addEventListener('click',()=>{sessionStorage.removeItem('hvac_user');location.reload()});
 
-    document.getElementById('login-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const u = document.getElementById('login-user').value.trim().toLowerCase();
-      const p = document.getElementById('login-pass').value;
-      const err = document.getElementById('login-error');
-      if (USERS[u] && USERS[u] === p) {
-        sessionStorage.setItem('hvac_user', u);
-        err.classList.add('hidden');
-        showApp(u);
-      } else {
-        err.textContent = 'Username atau password salah.';
-        err.classList.remove('hidden');
-      }
-    });
+async function loadBuilding(bkey){
+  currentBuilding=bkey;
+  const b=BUILDINGS[bkey];
+  document.getElementById('header-building').textContent=b.label;
+  document.getElementById('loading-section').classList.remove('hidden');
+  document.getElementById('main-content').classList.add('hidden');
+  document.getElementById('error-section').classList.add('hidden');
+  const detail=document.getElementById('loading-detail');
+  sheetData={}; chillerData=[];
+  let loaded=0;
+  try{
+    detail.textContent='Memuat Chiller...';
+    const r=await fetch('./data/'+bkey+'/data_ahu-ch.json');
+    if(r.ok){chillerData=await r.json();loaded++}
+  }catch(e){}
+  for(const f of b.files){
+    try{
+      detail.textContent='Memuat '+f+'...';
+      const r=await fetch('./data/'+bkey+'/'+f);
+      if(r.ok){const j=await r.json();sheetData[j.sheet]=j;loaded++}
+    }catch(e){}
+  }
+  document.getElementById('loading-section').classList.add('hidden');
+  if(loaded===0){document.getElementById('error-section').classList.remove('hidden');return}
+  document.getElementById('main-content').classList.remove('hidden');
+  document.getElementById('load-status').textContent=loaded+' file · '+b.label;
+  const ss=document.getElementById('select-sheet'); ss.innerHTML='';
+  Object.keys(sheetData).sort().forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;ss.appendChild(o)});
+  if(Object.keys(sheetData).length) ss.dispatchEvent(new Event('change'));
+  renderChiller();
+}
 
-    document.getElementById('btn-logout').addEventListener('click', () => {
-      sessionStorage.removeItem('hvac_user');
-      location.reload();
-    });
+document.getElementById('select-building').addEventListener('change',e=>{
+  loadBuilding(e.target.value);
+});
 
-    // ========== DASHBOARD LOGIC ==========
-    const SPECS = { tempMax: 27, rhMax: 70, dpMin: 5 };
-    const DATA_FILES = ['data_ahu-1.json','data_ahu-3.json','data_ahu-3a.json','data_ahu-4.json','data_ahu-5a.json','data_ahu-5b.json','data_ahu-7.json','data_ahu-8.json','data_ahu-9.json'];
-    let sheetData = {}, chillerData = [], currentData = [];
-    let charts = { temp:null, rh:null, dp:null, chTemp:null, chDt:null };
+document.getElementById('select-sheet').addEventListener('change',()=>{
+  const j=sheetData[document.getElementById('select-sheet').value];
+  const sr=document.getElementById('select-room'); sr.innerHTML='';
+  if(!j)return;
+  (j.rooms||[]).forEach(r=>{
+    const o=document.createElement('option'); o.value=r.name;
+    const h=r.has||[]; const c=h.includes('temp')&&h.includes('rh')&&h.includes('dp');
+    o.textContent=r.name+(c?'':' (tidak lengkap)'); sr.appendChild(o);
+  });
+});
 
-    function parseDate(v){ if(!v)return null; const d=new Date(v); return isNaN(d.getTime())?null:d; }
-    function formatDate(d){ if(!d)return'-'; return d.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
-    function avg(a){ return a.length?a.reduce((x,y)=>x+y,0)/a.length:0; }
-    function pct(n,t){ return t?((n/t)*100).toFixed(1)+'%':'0%'; }
-    function isValid(t,r,d){ if(t==null||r==null||d==null)return false; return t<=SPECS.tempMax && r<=SPECS.rhMax && d>=SPECS.dpMin; }
+document.getElementById('btn-apply').addEventListener('click',()=>{
+  const sn=document.getElementById('select-sheet').value;
+  const rn=document.getElementById('select-room').value;
+  const j=sheetData[sn]; if(!j||!rn)return;
+  const result=[]; let total=0;
+  for(const row of j.data){
+    const v=row.rooms&&row.rooms[rn]; if(!v)continue; total++;
+    if(isValid(v.temp,v.rh,v.dp)) result.push({time:parseDate(row.time),temp:v.temp,rh:v.rh,dp:v.dp});
+  }
+  result.sort((a,b)=>(a.time||0)-(b.time||0));
+  currentData=result; renderRoom(total,rn,sn);
+});
 
-    async function loadAllData(){
-      const detail=document.getElementById('loading-detail');
-      let loaded=0;
-      try{ detail.textContent='Memuat Chiller...'; const r=await fetch('./data/data_ahu-ch.json'); if(r.ok){ chillerData=await r.json(); loaded++; } }catch(e){}
-      for(const f of DATA_FILES){
-        try{ detail.textContent='Memuat '+f+'...'; const r=await fetch('./data/'+f); if(r.ok){ const j=await r.json(); sheetData[j.sheet]=j; loaded++; } }catch(e){}
-      }
-      document.getElementById('loading-section').classList.add('hidden');
-      if(loaded===0){ document.getElementById('error-section').classList.remove('hidden'); return; }
-      document.getElementById('main-content').classList.remove('hidden');
-      document.getElementById('load-status').textContent=loaded+' file data dimuat';
-      const ss=document.getElementById('select-sheet'); ss.innerHTML='';
-      Object.keys(sheetData).sort().forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; ss.appendChild(o); });
-      if(Object.keys(sheetData).length) ss.dispatchEvent(new Event('change'));
-      renderChiller();
-    }
+function renderRoom(total,rn,sn){
+  document.getElementById('stat-total').textContent=total.toLocaleString('id-ID');
+  document.getElementById('stat-valid').textContent=currentData.length.toLocaleString('id-ID');
+  document.getElementById('table-title').textContent=sn+' › '+rn+' (HVAC ON)';
+  const st=document.getElementById('hvac-status'); st.classList.remove('hidden');
+  if(currentData.length){
+    const f=currentData[0], l=currentData[currentData.length-1];
+    document.getElementById('stat-start').textContent=formatDate(f.time);
+    document.getElementById('stat-end').textContent=formatDate(l.time);
+    document.getElementById('val-temp').textContent=l.temp.toFixed(1);
+    document.getElementById('val-rh').textContent=l.rh.toFixed(1);
+    document.getElementById('val-dp').textContent=l.dp.toFixed(1);
+    document.getElementById('bar-temp').style.width=Math.min(100,(l.temp/SPECS.tempMax)*100)+'%';
+    document.getElementById('bar-rh').style.width=Math.min(100,(l.rh/SPECS.rhMax)*100)+'%';
+    document.getElementById('bar-dp').style.width=Math.min(100,(l.dp/50)*100)+'%';
+    st.textContent='HVAC ON'; st.className='px-4 py-1.5 rounded-full text-sm font-semibold text-white status-on';
+  } else {
+    ['stat-start','stat-end'].forEach(id=>document.getElementById(id).textContent='-');
+    ['val-temp','val-rh','val-dp'].forEach(id=>document.getElementById(id).textContent='--');
+    ['bar-temp','bar-rh','bar-dp'].forEach(id=>document.getElementById(id).style.width='0%');
+    st.textContent='Tidak ada data valid'; st.className='px-4 py-1.5 rounded-full text-sm font-semibold text-white status-off';
+  }
+  renderRoomCharts(); renderRoomTable(currentData);
+}
 
-    document.getElementById('select-sheet').addEventListener('change',()=>{
-      const j=sheetData[document.getElementById('select-sheet').value];
-      const sr=document.getElementById('select-room'); sr.innerHTML='';
-      if(!j)return;
-      (j.rooms||[]).forEach(r=>{
-        const o=document.createElement('option'); o.value=r.name;
-        const h=r.has||[]; const c=h.includes('temp')&&h.includes('rh')&&h.includes('dp');
-        o.textContent=r.name+(c?'':' (tidak lengkap)'); sr.appendChild(o);
-      });
-    });
+function renderRoomCharts(){
+  let data=currentData; if(data.length>400){const s=Math.ceil(data.length/400); data=data.filter((_,i)=>i%s===0)}
+  const labels=data.map(d=>d.time?d.time.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'');
+  const common={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#e2e8f0',bodyColor:'#cbd5e1',borderColor:'#475569',borderWidth:1}},scales:{x:{ticks:{color:'#94a3b8',maxTicksLimit:7,font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}}},elements:{point:{radius:0,hoverRadius:4},line:{tension:0.3,borderWidth:2}}};
+  ['temp','rh','dp'].forEach(k=>{if(charts[k]){charts[k].destroy();charts[k]=null}});
+  charts.temp=new Chart(document.getElementById('chart-temp'),{type:'line',data:{labels,datasets:[{data:data.map(d=>d.temp),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.1)',fill:true}]},options:{...common,scales:{...common.scales,y:{...common.scales.y,suggestedMax:SPECS.tempMax+2}}}});
+  charts.rh=new Chart(document.getElementById('chart-rh'),{type:'line',data:{labels,datasets:[{data:data.map(d=>d.rh),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',fill:true}]},options:{...common,scales:{...common.scales,y:{...common.scales.y,suggestedMax:SPECS.rhMax+5}}}});
+  charts.dp=new Chart(document.getElementById('chart-dp'),{type:'line',data:{labels,datasets:[{data:data.map(d=>d.dp),borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,0.1)',fill:true}]},options:common});
+}
 
-    document.getElementById('btn-apply').addEventListener('click',()=>{
-      const sn=document.getElementById('select-sheet').value;
-      const rn=document.getElementById('select-room').value;
-      const j=sheetData[sn]; if(!j||!rn)return;
-      const result=[]; let total=0;
-      for(const row of j.data){
-        const v=row.rooms&&row.rooms[rn]; if(!v)continue; total++;
-        if(isValid(v.temp,v.rh,v.dp)) result.push({time:parseDate(row.time),temp:v.temp,rh:v.rh,dp:v.dp});
-      }
-      result.sort((a,b)=>(a.time||0)-(b.time||0));
-      currentData=result; renderRoom(total,rn,sn);
-    });
+function renderRoomTable(data){
+  const s=(document.getElementById('search-table').value||'').toLowerCase();
+  let f=s?data.filter(d=>formatDate(d.time).toLowerCase().includes(s)||String(d.temp).includes(s)||String(d.rh).includes(s)||String(d.dp).includes(s)):data;
+  const rows=[...f].reverse().slice(0,400);
+  document.getElementById('table-body').innerHTML=rows.map((d,i)=>`<tr class="hover:bg-slate-800/50"><td class="px-4 py-2.5 text-slate-500">${i+1}</td><td class="px-4 py-2.5 text-slate-300">${formatDate(d.time)}</td><td class="px-4 py-2.5 text-right font-mono text-sky-300">${d.temp.toFixed(1)}</td><td class="px-4 py-2.5 text-right font-mono text-emerald-300">${d.rh.toFixed(1)}</td><td class="px-4 py-2.5 text-right font-mono text-amber-300">${d.dp.toFixed(1)}</td></tr>`).join('');
+  document.getElementById('table-count').textContent=f.length.toLocaleString('id-ID');
+}
 
-    function renderRoom(total,rn,sn){
-      document.getElementById('stat-total').textContent=total.toLocaleString('id-ID');
-      document.getElementById('stat-valid').textContent=currentData.length.toLocaleString('id-ID');
-      document.getElementById('table-title').textContent=sn+' › '+rn+' (HVAC ON)';
-      const st=document.getElementById('hvac-status'); st.classList.remove('hidden');
-      if(currentData.length){
-        const f=currentData[0], l=currentData[currentData.length-1];
-        document.getElementById('stat-start').textContent=formatDate(f.time);
-        document.getElementById('stat-end').textContent=formatDate(l.time);
-        document.getElementById('val-temp').textContent=l.temp.toFixed(1);
-        document.getElementById('val-rh').textContent=l.rh.toFixed(1);
-        document.getElementById('val-dp').textContent=l.dp.toFixed(1);
-        document.getElementById('bar-temp').style.width=Math.min(100,(l.temp/SPECS.tempMax)*100)+'%';
-        document.getElementById('bar-rh').style.width=Math.min(100,(l.rh/SPECS.rhMax)*100)+'%';
-        document.getElementById('bar-dp').style.width=Math.min(100,(l.dp/50)*100)+'%';
-        st.textContent='HVAC ON'; st.className='px-4 py-1.5 rounded-full text-sm font-semibold text-white status-on';
-      } else {
-        ['stat-start','stat-end'].forEach(id=>document.getElementById(id).textContent='-');
-        ['val-temp','val-rh','val-dp'].forEach(id=>document.getElementById(id).textContent='--');
-        ['bar-temp','bar-rh','bar-dp'].forEach(id=>document.getElementById(id).style.width='0%');
-        st.textContent='Tidak ada data valid'; st.className='px-4 py-1.5 rounded-full text-sm font-semibold text-white status-off';
-      }
-      renderRoomCharts(); renderRoomTable(currentData);
-    }
+function renderChiller(){
+  const data=chillerData;
+  if(!data.length){document.getElementById('ch-insights').innerHTML='<p class="text-rose-400">Data Chiller tidak tersedia.</p>';return}
+  const supplies=data.map(d=>d.supply), returns=data.map(d=>d.return), dts=data.map(d=>d.dt);
+  const last=data[data.length-1], first=data[0];
+  document.getElementById('ch-total').textContent=data.length.toLocaleString('id-ID');
+  document.getElementById('ch-period').textContent=formatDate(parseDate(first.time)).split(',')[0]+' – '+formatDate(parseDate(last.time)).split(',')[0];
+  document.getElementById('ch-avg-dt').textContent=avg(dts).toFixed(1)+'°C';
+  document.getElementById('ch-avg-supply').textContent=avg(supplies).toFixed(1)+'°C';
+  document.getElementById('ch-val-supply').textContent=last.supply.toFixed(1);
+  document.getElementById('ch-val-return').textContent=last.return.toFixed(1);
+  document.getElementById('ch-val-dt').textContent=last.dt.toFixed(1);
+  document.getElementById('ch-min-supply').textContent=Math.min(...supplies).toFixed(1);
+  document.getElementById('ch-max-supply').textContent=Math.max(...supplies).toFixed(1);
+  document.getElementById('ch-avg-supply2').textContent=avg(supplies).toFixed(1);
+  document.getElementById('ch-min-return').textContent=Math.min(...returns).toFixed(1);
+  document.getElementById('ch-max-return').textContent=Math.max(...returns).toFixed(1);
+  document.getElementById('ch-avg-return').textContent=avg(returns).toFixed(1);
+  document.getElementById('ch-min-dt').textContent=Math.min(...dts).toFixed(1);
+  document.getElementById('ch-max-dt').textContent=Math.max(...dts).toFixed(1);
+  document.getElementById('ch-avg-dt2').textContent=avg(dts).toFixed(1);
+  const n=data.length;
+  const dtL=dts.filter(d=>d<3).length, dtM=dts.filter(d=>d>=3&&d<=8).length, dtH=dts.filter(d=>d>8).length;
+  document.getElementById('ch-dt-low-pct').textContent=pct(dtL,n); document.getElementById('ch-dt-mid-pct').textContent=pct(dtM,n); document.getElementById('ch-dt-high-pct').textContent=pct(dtH,n);
+  document.getElementById('ch-dt-low-bar').style.width=(dtL/n*100)+'%'; document.getElementById('ch-dt-mid-bar').style.width=(dtM/n*100)+'%'; document.getElementById('ch-dt-high-bar').style.width=(dtH/n*100)+'%';
+  const sL=supplies.filter(s=>s<6).length, sM=supplies.filter(s=>s>=6&&s<=10).length, sH=supplies.filter(s=>s>10).length;
+  document.getElementById('ch-s-low-pct').textContent=pct(sL,n); document.getElementById('ch-s-mid-pct').textContent=pct(sM,n); document.getElementById('ch-s-high-pct').textContent=pct(sH,n);
+  document.getElementById('ch-s-low-bar').style.width=(sL/n*100)+'%'; document.getElementById('ch-s-mid-bar').style.width=(sM/n*100)+'%'; document.getElementById('ch-s-high-bar').style.width=(sH/n*100)+'%';
+  const insights=[]; const aS=avg(supplies), aD=avg(dts);
+  if(aS>10) insights.push('• Supply rata-rata <strong class="text-amber-400">'+aS.toFixed(1)+'°C</strong> — di atas setpoint tipikal.');
+  if(aD>8) insights.push('• Delta T rata-rata <strong class="text-amber-400">'+aD.toFixed(1)+'°C</strong> tergolong tinggi.');
+  if(dtH/n>0.7) insights.push('• <strong class="text-amber-400">'+pct(dtH,n)+'</strong> data Delta T > 8°C.');
+  if(dtL/n>0.05) insights.push('• Terdapat <strong class="text-rose-400">'+pct(dtL,n)+'</strong> data Delta T < 3°C.');
+  insights.push('• COP / kW/TR membutuhkan data konsumsi listrik chiller.');
+  document.getElementById('ch-insights').innerHTML=insights.map(i=>'<p>'+i+'</p>').join('');
+  let cd=data; if(cd.length>400){const s=Math.ceil(cd.length/400); cd=cd.filter((_,i)=>i%s===0)}
+  const labels=cd.map(d=>{const t=parseDate(d.time); return t?t.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''});
+  const common={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}},tooltip:{backgroundColor:'#1e293b',titleColor:'#e2e8f0',bodyColor:'#cbd5e1',borderColor:'#475569',borderWidth:1}},scales:{x:{ticks:{color:'#94a3b8',maxTicksLimit:8,font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}}},elements:{point:{radius:0,hoverRadius:4},line:{tension:0.3,borderWidth:2}}};
+  if(charts.chTemp){charts.chTemp.destroy();charts.chTemp=null} if(charts.chDt){charts.chDt.destroy();charts.chDt=null}
+  charts.chTemp=new Chart(document.getElementById('chart-ch-temp'),{type:'line',data:{labels,datasets:[{label:'Supply',data:cd.map(d=>d.supply),borderColor:'#38bdf8',fill:false},{label:'Return',data:cd.map(d=>d.return),borderColor:'#f43f5e',fill:false}]},options:common});
+  charts.chDt=new Chart(document.getElementById('chart-ch-dt'),{type:'line',data:{labels,datasets:[{label:'Delta T',data:cd.map(d=>d.dt),borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,0.1)',fill:true}]},options:common});
+}
 
-    function renderRoomCharts(){
-      let data=currentData; if(data.length>400){const s=Math.ceil(data.length/400); data=data.filter((_,i)=>i%s===0);}
-      const labels=data.map(d=>d.time?d.time.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'');
-      const common={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#e2e8f0',bodyColor:'#cbd5e1',borderColor:'#475569',borderWidth:1}},scales:{x:{ticks:{color:'#94a3b8',maxTicksLimit:7,font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}}},elements:{point:{radius:0,hoverRadius:4},line:{tension:0.3,borderWidth:2}}};
-      ['temp','rh','dp'].forEach(k=>{if(charts[k]){charts[k].destroy();charts[k]=null;}});
-      charts.temp=new Chart(document.getElementById('chart-temp'),{type:'line',data:{labels,datasets:[{data:data.map(d=>d.temp),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.1)',fill:true}]},options:{...common,scales:{...common.scales,y:{...common.scales.y,suggestedMax:SPECS.tempMax+2}}}});
-      charts.rh=new Chart(document.getElementById('chart-rh'),{type:'line',data:{labels,datasets:[{data:data.map(d=>d.rh),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',fill:true}]},options:{...common,scales:{...common.scales,y:{...common.scales.y,suggestedMax:SPECS.rhMax+5}}}});
-      charts.dp=new Chart(document.getElementById('chart-dp'),{type:'line',data:{labels,datasets:[{data:data.map(d=>d.dp),borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,0.1)',fill:true}]},options:common});
-    }
-
-    function renderRoomTable(data){
-      const s=(document.getElementById('search-table').value||'').toLowerCase();
-      let f=s?data.filter(d=>formatDate(d.time).toLowerCase().includes(s)||String(d.temp).includes(s)||String(d.rh).includes(s)||String(d.dp).includes(s)):data;
-      const rows=[...f].reverse().slice(0,400);
-      document.getElementById('table-body').innerHTML=rows.map((d,i)=>`<tr class="hover:bg-slate-800/50"><td class="px-4 py-2.5 text-slate-500">${i+1}</td><td class="px-4 py-2.5 text-slate-300">${formatDate(d.time)}</td><td class="px-4 py-2.5 text-right font-mono text-sky-300">${d.temp.toFixed(1)}</td><td class="px-4 py-2.5 text-right font-mono text-emerald-300">${d.rh.toFixed(1)}</td><td class="px-4 py-2.5 text-right font-mono text-amber-300">${d.dp.toFixed(1)}</td></tr>`).join('');
-      document.getElementById('table-count').textContent=f.length.toLocaleString('id-ID');
-    }
-
-    function renderChiller(){
-      const data=chillerData; if(!data.length){document.getElementById('ch-insights').innerHTML='<p class="text-rose-400">Data Chiller tidak tersedia.</p>';return;}
-      const supplies=data.map(d=>d.supply), returns=data.map(d=>d.return), dts=data.map(d=>d.dt);
-      const last=data[data.length-1], first=data[0];
-      document.getElementById('ch-total').textContent=data.length.toLocaleString('id-ID');
-      document.getElementById('ch-period').textContent=formatDate(parseDate(first.time)).split(',')[0]+' – '+formatDate(parseDate(last.time)).split(',')[0];
-      document.getElementById('ch-avg-dt').textContent=avg(dts).toFixed(1)+'°C';
-      document.getElementById('ch-avg-supply').textContent=avg(supplies).toFixed(1)+'°C';
-      document.getElementById('ch-val-supply').textContent=last.supply.toFixed(1);
-      document.getElementById('ch-val-return').textContent=last.return.toFixed(1);
-      document.getElementById('ch-val-dt').textContent=last.dt.toFixed(1);
-      document.getElementById('ch-min-supply').textContent=Math.min(...supplies).toFixed(1);
-      document.getElementById('ch-max-supply').textContent=Math.max(...supplies).toFixed(1);
-      document.getElementById('ch-avg-supply2').textContent=avg(supplies).toFixed(1);
-      document.getElementById('ch-min-return').textContent=Math.min(...returns).toFixed(1);
-      document.getElementById('ch-max-return').textContent=Math.max(...returns).toFixed(1);
-      document.getElementById('ch-avg-return').textContent=avg(returns).toFixed(1);
-      document.getElementById('ch-min-dt').textContent=Math.min(...dts).toFixed(1);
-      document.getElementById('ch-max-dt').textContent=Math.max(...dts).toFixed(1);
-      document.getElementById('ch-avg-dt2').textContent=avg(dts).toFixed(1);
-      const n=data.length;
-      const dtL=dts.filter(d=>d<3).length, dtM=dts.filter(d=>d>=3&&d<=8).length, dtH=dts.filter(d=>d>8).length;
-      document.getElementById('ch-dt-low-pct').textContent=pct(dtL,n); document.getElementById('ch-dt-mid-pct').textContent=pct(dtM,n); document.getElementById('ch-dt-high-pct').textContent=pct(dtH,n);
-      document.getElementById('ch-dt-low-bar').style.width=(dtL/n*100)+'%'; document.getElementById('ch-dt-mid-bar').style.width=(dtM/n*100)+'%'; document.getElementById('ch-dt-high-bar').style.width=(dtH/n*100)+'%';
-      const sL=supplies.filter(s=>s<6).length, sM=supplies.filter(s=>s>=6&&s<=10).length, sH=supplies.filter(s=>s>10).length;
-      document.getElementById('ch-s-low-pct').textContent=pct(sL,n); document.getElementById('ch-s-mid-pct').textContent=pct(sM,n); document.getElementById('ch-s-high-pct').textContent=pct(sH,n);
-      document.getElementById('ch-s-low-bar').style.width=(sL/n*100)+'%'; document.getElementById('ch-s-mid-bar').style.width=(sM/n*100)+'%'; document.getElementById('ch-s-high-bar').style.width=(sH/n*100)+'%';
-      const insights=[]; const aS=avg(supplies), aD=avg(dts);
-      if(aS>10) insights.push('• Supply rata-rata <strong class="text-amber-400">'+aS.toFixed(1)+'°C</strong> — di atas setpoint tipikal.');
-      if(aD>8) insights.push('• Delta T rata-rata <strong class="text-amber-400">'+aD.toFixed(1)+'°C</strong> tergolong tinggi.');
-      if(dtH/n>0.7) insights.push('• <strong class="text-amber-400">'+pct(dtH,n)+'</strong> data memiliki Delta T > 8°C.');
-      if(dtL/n>0.05) insights.push('• Terdapat <strong class="text-rose-400">'+pct(dtL,n)+'</strong> data Delta T < 3°C (kemungkinan OFF/anomali).');
-      insights.push('• Untuk COP / kW/TR diperlukan data konsumsi listrik chiller.');
-      document.getElementById('ch-insights').innerHTML=insights.map(i=>'<p>'+i+'</p>').join('');
-      let cd=data; if(cd.length>400){const s=Math.ceil(cd.length/400); cd=cd.filter((_,i)=>i%s===0);}
-      const labels=cd.map(d=>{const t=parseDate(d.time); return t?t.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';});
-      const common={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}},tooltip:{backgroundColor:'#1e293b',titleColor:'#e2e8f0',bodyColor:'#cbd5e1',borderColor:'#475569',borderWidth:1}},scales:{x:{ticks:{color:'#94a3b8',maxTicksLimit:8,font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(71,85,105,0.3)'}}},elements:{point:{radius:0,hoverRadius:4},line:{tension:0.3,borderWidth:2}}};
-      if(charts.chTemp){charts.chTemp.destroy();charts.chTemp=null;} if(charts.chDt){charts.chDt.destroy();charts.chDt=null;}
-      charts.chTemp=new Chart(document.getElementById('chart-ch-temp'),{type:'line',data:{labels,datasets:[{label:'Supply',data:cd.map(d=>d.supply),borderColor:'#38bdf8',fill:false},{label:'Return',data:cd.map(d=>d.return),borderColor:'#f43f5e',fill:false}]},options:common});
-      charts.chDt=new Chart(document.getElementById('chart-ch-dt'),{type:'line',data:{labels,datasets:[{label:'Delta T',data:cd.map(d=>d.dt),borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,0.1)',fill:true}]},options:common});
-    }
-
-    document.getElementById('tab-room').addEventListener('click',()=>{
-      document.getElementById('tab-room').className='tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition';
-      document.getElementById('tab-chiller').className='tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition';
-      document.getElementById('panel-room').classList.remove('hidden'); document.getElementById('panel-chiller').classList.add('hidden');
-    });
-    document.getElementById('tab-chiller').addEventListener('click',()=>{
-      document.getElementById('tab-chiller').className='tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition';
-      document.getElementById('tab-room').className='tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition';
-      document.getElementById('panel-chiller').classList.remove('hidden'); document.getElementById('panel-room').classList.add('hidden');
-    });
-    document.getElementById('search-table').addEventListener('input',()=>renderRoomTable(currentData));
-
-    // Start with login check
-    checkAuth();
-  </script>
+document.getElementById('tab-room').addEventListener('click',()=>{
+  document.getElementById('tab-room').className='tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition';
+  document.getElementById('tab-chiller').className='tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition';
+  document.getElementById('panel-room').classList.remove('hidden'); document.getElementById('panel-chiller').classList.add('hidden');
+});
+document.getElementById('tab-chiller').addEventListener('click',()=>{
+  document.getElementById('tab-chiller').className='tab-active px-5 py-2.5 rounded-lg text-sm font-medium transition';
+  document.getElementById('tab-room').className='tab-inactive px-5 py-2.5 rounded-lg text-sm font-medium transition';
+  document.getElementById('panel-chiller').classList.remove('hidden'); document.getElementById('panel-room').classList.add('hidden');
+});
+document.getElementById('search-table').addEventListener('input',()=>renderRoomTable(currentData));
+checkAuth();
+</script>
 </body>
 </html>
